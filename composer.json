@@ -1,6 +1,6 @@
 {
     "name": "nmdigitalhub/payment-gateway",
-    "description": "Advanced Payment Gateway Package for Laravel with CardCom, Maya Mobile, and ResellerClub Integration",
+    "description": "Advanced Payment Gateway Package for Laravel with eSIM-based unified checkout, slug routing, CardCom API v11, Maya Mobile, and ResellerClub Integration",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -14,7 +14,11 @@
         "esim",
         "domains",
         "israel",
-        "hebrew"
+        "hebrew",
+        "slug-routing",
+        "unified-checkout",
+        "package-manager",
+        "rtl-support"
     ],
     "authors": [
         {
@@ -71,6 +75,12 @@
         "install-package": "php artisan payment-gateway:install",
         "post-autoload-dump": [
             "@php artisan package:discover --ansi"
+        ],
+        "post-install-cmd": [
+            "@php artisan payment-gateway:install --force --no-interaction"
+        ],
+        "post-update-cmd": [
+            "@php artisan payment-gateway:install --force --no-interaction"
         ]
     },
     "extra": {

@@ -1,8 +1,8 @@
-# חבילת תשלומים מקצועית - NM Digital Hub
+# Payment Gateway Package 🚀
+
+חבילת שער תשלום מתקדמת ל-Laravel עם אינטגרציה מלאה לCardCom, Maya Mobile ו-ResellerClub - מבוססת על מערכת eSIM מאוחדת עם Slug routing ו-Frontend מלא
 
 <div dir="rtl">
-
-חבילה מקצועית לעיבוד תשלומים ב-Laravel עם תמיכה מלאה ב-CardCom, Maya Mobile, ו-ResellerClub.
 
 ## תכונות עיקריות
 
@@ -397,7 +397,17 @@ php artisan payment-gateway:doctor
 
 ## 🔄 עדכונים אחרונים
 
+- **v1.1.0** - **הטמעה מלאה מבוססת eSIM**: Slug routing, זרימה מלאה מקטלוג לרכישה, Package Manager עם JavaScript מודולרי
+- **v1.0.3** - הוספת קונטרולרי PackageCheckout ו-PaymentHandler עם תמיכה מלאה בslug navigation  
+- **v1.0.2** - אינטגרציה מלאה של API services (CardCom, Maya Mobile, ResellerClub) עם הגדרות admin-configurable
 - **v1.0.1** - תיקון שגיאת duplicate method ב-InstallCommand
 - **v1.0.0** - גרסה ראשונה עם תמיכה מלאה ב-CardCom, Maya Mobile, ResellerClub
+
+### 🚀 תכונות חדשות ב-v1.1.0:
+- **מערכת eSIM מאוחדת**: זרימה מלאה מבוססת על מערכת ההזמנות המאוחדת של eSIM
+- **Slug Navigation**: `/payment-gateway/checkout/{package-slug}` עם תמיכה דינמית
+- **JavaScript מודולרי**: PackageManager, FormHandler, ConnectionTester עם RTL support
+- **Frontend מלא**: קטלוג חבילות, חיפוש, סינון, וזרימה מלאה לרכישה
+- **אינטגרציה אוטומטית**: רישום controllers, routes, ו-resources ב-Filament באופן אוטומטי
 
 </div>

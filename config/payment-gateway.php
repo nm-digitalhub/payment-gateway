@@ -38,35 +38,38 @@ return [
     'providers' => [
         'cardcom' => [
             'driver' => 'cardcom',
-            'class' => \NMDigitalHub\PaymentGateway\Services\CardComLowProfileService::class,
-            'enabled' => true,
+            'class' => \NMDigitalHub\PaymentGateway\Services\CardComService::class,
+            'enabled' => true, // יכול להיות מוחלף בהגדרות פאנל אדמין
             'supports_tokens' => true,
             'supports_3ds' => true,
             'supports_refunds' => true,
             'currency' => 'ILS',
-            'test_mode' => env('CARDCOM_TEST_MODE', false),
+            // כל נתוני החיבור נקבעים דרך App\Settings\CardComSettings
+            'settings_class' => \App\Settings\CardComSettings::class,
         ],
         
         'maya_mobile' => [
             'driver' => 'maya_mobile',
             'class' => \NMDigitalHub\PaymentGateway\Services\MayaMobileService::class,
-            'enabled' => true,
+            'enabled' => true, // יכול להיות מוחלף בהגדרות פאנל אדמין
             'supports_tokens' => false,
             'supports_3ds' => false,
             'supports_refunds' => false,
             'currency' => 'USD',
-            'test_mode' => env('MAYA_MOBILE_TEST_MODE', false),
+            // כל נתוני החיבור נקבעים דרך App\Settings\MayaMobileSettings
+            'settings_class' => \App\Settings\MayaMobileSettings::class,
         ],
         
         'resellerclub' => [
             'driver' => 'resellerclub',
             'class' => \NMDigitalHub\PaymentGateway\Services\ResellerClubService::class,
-            'enabled' => true,
+            'enabled' => true, // יכול להיות מוחלף בהגדרות פאנל אדמין
             'supports_tokens' => false,
             'supports_3ds' => false,
             'supports_refunds' => true,
             'currency' => 'USD',
-            'test_mode' => env('RESELLERCLUB_TEST_MODE', false),
+            // כל נתוני החיבור נקבעים דרך App\Settings\ResellerClubSettings
+            'settings_class' => \App\Settings\ResellerClubSettings::class,
         ],
     ],
 

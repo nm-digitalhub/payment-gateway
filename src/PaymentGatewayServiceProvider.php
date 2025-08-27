@@ -46,6 +46,7 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
                 CreatePaymentPageCommand::class,
                 \NMDigitalHub\PaymentGateway\Console\Commands\CurrencyUpdateCommand::class,
                 \NMDigitalHub\PaymentGateway\Console\Commands\SyncPackagesCommand::class,
+                \NMDigitalHub\PaymentGateway\Console\Commands\TestApiConnectionsCommand::class,
             ])
             ->hasRoute('web')
             ->hasRoute('api')
@@ -72,6 +73,12 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
         // רישום Facade
         $this->app->alias(PaymentGatewayManager::class, 'payment-gateway');
 
+        // רישום שירותי API חדשים
+        $this->registerApiServices();
+        
+        // רישום קונטרולרי חבילות
+        $this->registerPackageControllers();
+
         // רישום Contracts Bindings (P1 Critical)
         $this->registerContractBindings();
     }
@@ -83,6 +90,9 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
         
         // רישום Filament Assets
         $this->registerFilamentAssets();
+        
+        // רישום Filament Resources - חדש!
+        $this->registerFilamentResources();
 
         // רישום משימות מתוזמנות
         $this->scheduleCommands();
@@ -92,6 +102,76 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
 
         // רישום Event Listeners
         $this->registerEventListeners();
+    }
+
+    /**
+     * רישום שירותי API המותאמים אישית
+     */
+    protected function registerApiServices(): void
+    {
+        // רישום CardComService
+        $this->app->singleton(\NMDigitalHub\PaymentGateway\Services\CardComService::class, function ($app) {
+            return new \NMDigitalHub\PaymentGateway\Services\CardComService();
+        });
+
+        // רישום MayaMobileService
+        $this->app->singleton(\NMDigitalHub\PaymentGateway\Services\MayaMobileService::class, function ($app) {
+            return new \NMDigitalHub\PaymentGateway\Services\MayaMobileService();
+        });
+
+        // רישום ResellerClubService
+        $this->app->singleton(\NMDigitalHub\PaymentGateway\Services\ResellerClubService::class, function ($app) {
+            return new \NMDigitalHub\PaymentGateway\Services\ResellerClubService();
+        });
+
+        \Log::info('Payment Gateway: API Services registered successfully', [
+            'services' => [
+                'CardComService',
+                'MayaMobileService', 
+                'ResellerClubService'
+            ]
+        ]);
+    }
+
+    /**
+     * רישום קונטרולרי חבילות החדשים
+     */
+    protected function registerPackageControllers(): void
+    {
+        // רישום PackageCheckoutController
+        $this->app->singleton(\NMDigitalHub\PaymentGateway\Http\Controllers\PackageCheckoutController::class, function ($app) {
+            return new \NMDigitalHub\PaymentGateway\Http\Controllers\PackageCheckoutController(
+                $app->make(\NMDigitalHub\PaymentGateway\Services\CardComService::class),
+                $app->make(\NMDigitalHub\PaymentGateway\Services\MayaMobileService::class),
+                $app->make(\NMDigitalHub\PaymentGateway\Services\ResellerClubService::class),
+                $app->make(PaymentGatewayManager::class)
+            );
+        });
+
+        // רישום PackageCatalogController
+        $this->app->singleton(\NMDigitalHub\PaymentGateway\Http\Controllers\PackageCatalogController::class, function ($app) {
+            return new \NMDigitalHub\PaymentGateway\Http\Controllers\PackageCatalogController(
+                $app->make(\NMDigitalHub\PaymentGateway\Services\CardComService::class),
+                $app->make(\NMDigitalHub\PaymentGateway\Services\MayaMobileService::class),
+                $app->make(\NMDigitalHub\PaymentGateway\Services\ResellerClubService::class)
+            );
+        });
+
+        // רישום PaymentHandlerController
+        $this->app->singleton(\NMDigitalHub\PaymentGateway\Http\Controllers\PaymentHandlerController::class, function ($app) {
+            return new \NMDigitalHub\PaymentGateway\Http\Controllers\PaymentHandlerController(
+                $app->make(\NMDigitalHub\PaymentGateway\Services\CardComService::class),
+                $app->make(PaymentGatewayManager::class)
+            );
+        });
+
+        \Log::info('Payment Gateway: Package Controllers registered successfully', [
+            'controllers' => [
+                'PackageCheckoutController',
+                'PackageCatalogController',
+                'PaymentHandlerController'
+            ]
+        ]);
     }
 
     /**
@@ -274,5 +354,107 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
             \NMDigitalHub\PaymentGateway\Events\PackagesSynced::class,
             [\NMDigitalHub\PaymentGateway\Listeners\LogSyncActivity::class, 'handlePackagesSynced']
         );
+    }
+
+    /**
+     * רישום משאבי Filament באופן אוטומטי
+     */
+    protected function registerFilamentResources(): void
+    {
+        // בדיקה שFilament קיים ומותקן
+        if (!class_exists('\\Filament\\Filament')) {
+            return;
+        }
+
+        // בדיקת הגדרות החבילה
+        if (!config('payment-gateway.filament.enabled', true)) {
+            return;
+        }
+
+        // רישום משאבי פאנל אדמין
+        if (config('payment-gateway.filament.admin_panel', true)) {
+            $this->registerAdminResources();
+        }
+
+        // רישום משאבי פאנל לקוחות
+        if (config('payment-gateway.filament.client_panel', true)) {
+            $this->registerClientResources();
+        }
+    }
+
+    /**
+     * רישום משאבי פאנל אדמין
+     */
+    protected function registerAdminResources(): void
+    {
+        // בדיקה שפאנל האדמין קיים
+        if (!class_exists('\\App\\Filament\\AdminPanelProvider')) {
+            return;
+        }
+
+        try {
+            // רישום PaymentPageResource
+            if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentPageResource')) {
+                \Filament\Facades\Filament::serving(function () {
+                    \Filament\Facades\Filament::registerResources([
+                        \NMDigitalHub\PaymentGateway\Filament\Resources\PaymentPageResource::class,
+                    ]);
+                });
+            }
+
+            // רישום PaymentTransactionResource
+            if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentTransactionResource')) {
+                \Filament\Facades\Filament::serving(function () {
+                    \Filament\Facades\Filament::registerResources([
+                        \NMDigitalHub\PaymentGateway\Filament\Resources\PaymentTransactionResource::class,
+                    ]);
+                });
+            }
+
+            \Log::info('Payment Gateway: Admin resources registered successfully');
+
+        } catch (\Exception $e) {
+            \Log::warning('Payment Gateway: Failed to register admin resources', [
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * רישום משאבי פאנל לקוחות
+     */
+    protected function registerClientResources(): void
+    {
+        // בדיקה שפאנל הלקוחות קיים
+        if (!class_exists('\\App\\Filament\\ClientPanelProvider')) {
+            return;
+        }
+
+        try {
+            // רישום ClientPaymentPageResource
+            if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Client\\Resources\\ClientPaymentPageResource')) {
+                \Filament\Facades\Filament::serving(function () {
+                    \Filament\Facades\Filament::registerResources([
+                        \NMDigitalHub\PaymentGateway\Filament\Client\Resources\ClientPaymentPageResource::class,
+                    ]);
+                });
+            }
+
+            // רישום ClientPaymentTransactionResource
+            if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Client\\Resources\\ClientPaymentTransactionResource')) {
+                \Filament\Facades\Filament::serving(function () {
+                    \Filament\Facades\Filament::registerResources([
+                        \NMDigitalHub\PaymentGateway\Filament\Client\Resources\ClientPaymentTransactionResource::class,
+                    ]);
+                });
+            }
+
+            \Log::info('Payment Gateway: Client resources registered successfully');
+
+        } catch (\Exception $e) {
+            \Log::warning('Payment Gateway: Failed to register client resources', [
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

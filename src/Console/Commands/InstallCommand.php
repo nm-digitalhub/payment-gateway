@@ -16,7 +16,8 @@ class InstallCommand extends Command
                             {--skip-migrations : Skip running migrations}
                             {--skip-publish : Skip publishing files}
                             {--optimize : Run optimization after installation}
-                            {--verbose : Show detailed installation progress}';
+                            {--verbose : Show detailed installation progress}
+                            {--no-interaction : Run without any interaction}';
     
     protected $description = 'התקן את חבילת Payment Gateway עם כל הרכיבים הנדרשים';
 
@@ -26,6 +27,11 @@ class InstallCommand extends Command
         
         // בדיקה אם כבר מותקן
         if ($this->isAlreadyInstalled() && !$this->option('force')) {
+            if ($this->option('no-interaction')) {
+                $this->info('ℹ️  Payment Gateway כבר מותקן - מדלג על התקנה');
+                return self::SUCCESS;
+            }
+            
             $this->warn('⚠️  Payment Gateway כבר מותקן!');
             
             if (!$this->confirm('האם תרצה להמשיך בכל זאת? (זה יעריף על ההגדרות הקיימות)')) {
@@ -48,15 +54,21 @@ class InstallCommand extends Command
             // שלב 4: הגדרת ספקי שירות
             $this->setupServiceProviders();
             
-            // שלב 5: יצירת נתוני דמו
+            // שלב 5: רישום Filament Resources
+            $this->registerFilamentResources();
+            
+            // שלב 6: יצירת נתוני דמו
             if ($this->option('with-demo')) {
                 $this->createDemoData();
             }
             
-            // שלב 6: עדכון composer
+            // שלב 7: עדכון composer
             $this->updateComposer();
             
-            // שלב 7: הודעת סיום
+            // שלב 8: בדיקת חיבורי API
+            $this->testApiConnections();
+            
+            // שלב 9: הודעת סיום
             $this->displaySuccessMessage();
             
             return self::SUCCESS;
@@ -175,5 +187,69 @@ class InstallCommand extends Command
         $this->info('');
         $this->line('💡 לעזרה נוספת: php artisan payment-gateway:help');
         $this->info('');
+    }
+
+    protected function registerFilamentResources(): void
+    {
+        $this->info('🎛️ רושם משאבי Filament...');
+        
+        try {
+            // בדיקה שFilament מותקן
+            if (!class_exists('\\Filament\\Filament')) {
+                $this->warn('⚠️  Filament לא מותקן - דילוג על רישום משאבים');
+                return;
+            }
+
+            // ניקוי cache
+            $this->call('filament:clear-cached-components');
+            
+            // רישום משאבים אוטומטי
+            $this->info('📋 רושם משאבי פאנל אדמין...');
+            $this->registerAdminPanelResources();
+            
+            $this->info('👤 רושם משאבי פאנל לקוחות...');
+            $this->registerClientPanelResources();
+            
+            // אופטימיזציה של Filament
+            $this->call('filament:optimize');
+            
+            $this->info('✅ משאבי Filament נרשמו בהצלחה');
+
+        } catch (\Exception $e) {
+            $this->error('❌ שגיאה ברישום משאבי Filament: ' . $e->getMessage());
+            $this->warn('💡 המשאבים יירשמו אוטומטיט בטעינה הבאה');
+        }
+    }
+
+    protected function registerAdminPanelResources(): void
+    {
+        $adminResources = [
+            'PaymentPageResource' => '\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentPageResource',
+            'PaymentTransactionResource' => '\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentTransactionResource',
+        ];
+
+        foreach ($adminResources as $name => $class) {
+            if (class_exists($class)) {
+                $this->line("   ✓ $name");
+            } else {
+                $this->line("   ⚠ $name - לא נמצא");
+            }
+        }
+    }
+
+    protected function registerClientPanelResources(): void
+    {
+        $clientResources = [
+            'ClientPaymentPageResource' => '\\NMDigitalHub\\PaymentGateway\\Filament\\Client\\Resources\\ClientPaymentPageResource',
+            'ClientPaymentTransactionResource' => '\\NMDigitalHub\\PaymentGateway\\Filament\\Client\\Resources\\ClientPaymentTransactionResource',
+        ];
+
+        foreach ($clientResources as $name => $class) {
+            if (class_exists($class)) {
+                $this->line("   ✓ $name");
+            } else {
+                $this->line("   ⚠ $name - לא נמצא");
+            }
+        }
     }
 }
