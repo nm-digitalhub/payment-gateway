@@ -1,0 +1,63 @@
+# Laravel Package .gitignore
+/vendor/
+node_modules/
+npm-debug.log*
+
+# IDE
+.idea
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Laravel
+*.env
+.env.backup
+.phpunit.result.cache
+
+# Testing
+/coverage
+.phpunit.cache
+tests/_output/*
+
+# Build artifacts
+/build
+/dist
+public/hot
+public/storage
+storage/*.key
+
+# Logs
+*.log
+laravel.log
+
+# Cache
+bootstrap/cache/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/testing/
+storage/framework/views/
+storage/logs/
+
+# Composer
+composer.phar
+composer.lock
+
+# Package development
+.php-cs-fixer.cache
+.phpstan.neon.dist
+phpstan.neon
+phpunit.xml.dist
+
+# IDE helpers
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
