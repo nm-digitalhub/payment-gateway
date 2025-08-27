@@ -393,4 +393,11 @@ php artisan payment-gateway:doctor
 
 פותחה בידי **NM Digital Hub** עם ❤️
 
+---
+
+## 🔄 עדכונים אחרונים
+
+- **v1.0.1** - תיקון שגיאת duplicate method ב-InstallCommand
+- **v1.0.0** - גרסה ראשונה עם תמיכה מלאה ב-CardCom, Maya Mobile, ResellerClub
+
 </div>
