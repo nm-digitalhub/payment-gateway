@@ -119,6 +119,37 @@ class PaymentGatewayManager
         });
     }
 
+    public function getAvailableProviders(): Collection
+    {
+        $allProviders = collect();
+        
+        // הוספת ספקי תשלומים
+        $paymentProviders = $this->getAvailablePaymentProviders()->map(function ($provider) {
+            return [
+                'name' => $provider['key'],
+                'display_name' => $provider['info']['name'] ?? $provider['key'],
+                'type' => 'payment',
+                'healthy' => $provider['healthy'],
+                'supports_tokens' => $provider['info']['supports_tokens'] ?? false,
+                'supports_3ds' => $provider['info']['supports_3ds'] ?? false,
+            ];
+        });
+        
+        // הוספת ספקי שירותים
+        $serviceProviders = $this->getAvailableServiceProviders()->map(function ($provider) {
+            return [
+                'name' => $provider['key'], 
+                'display_name' => $provider['info']['name'] ?? $provider['key'],
+                'type' => 'service',
+                'healthy' => $provider['healthy'],
+                'supports_tokens' => false,
+                'supports_3ds' => false,
+            ];
+        });
+        
+        return $allProviders->concat($paymentProviders)->concat($serviceProviders);
+    }
+
     protected function getBestPaymentProvider(string $countryCode = 'IL'): string
     {
         $provider = PaymentProvider::getBestForCountry($countryCode);
@@ -522,5 +553,73 @@ class PaymentGatewayManager
         }
 
         return $health;
+    }
+
+    /**
+     * בדיקת בריאות ספק בודד
+     */
+    public function checkProviderHealth(string $providerName): bool
+    {
+        // בדיקה אם זה ספק תשלומים
+        if (isset($this->paymentProviders[$providerName])) {
+            return $this->isProviderHealthy($providerName, 'payment');
+        }
+        
+        // בדיקה אם זה ספק שירותים
+        if (isset($this->serviceProviders[$providerName])) {
+            return $this->isProviderHealthy($providerName, 'service');
+        }
+        
+        return false;
+    }
+
+    /**
+     * קבלת סטטיסטיקות ספק בודד
+     */
+    public function getProviderStats(string $providerName): array
+    {
+        $baseStats = [
+            'weekly_transactions' => 0,
+            'monthly_transactions' => 0,
+            'success_rate' => 0,
+            'last_health_check' => 'אף פעם',
+            'total_revenue' => 0,
+        ];
+
+        try {
+            // חישוב סטטיסטיקות מהשבוע האחרון
+            $weeklyTransactions = PaymentTransaction::where('provider', $providerName)
+                ->whereBetween('created_at', [now()->subWeek(), now()])
+                ->count();
+            
+            // חישוב סטטיסטיקות מהחודש האחרון
+            $monthlyTransactions = PaymentTransaction::where('provider', $providerName)
+                ->whereBetween('created_at', [now()->subMonth(), now()])
+                ->count();
+            
+            $successfulTransactions = PaymentTransaction::where('provider', $providerName)
+                ->where('status', 'success')
+                ->whereBetween('created_at', [now()->subMonth(), now()])
+                ->count();
+            
+            $totalRevenue = PaymentTransaction::where('provider', $providerName)
+                ->where('status', 'success')
+                ->whereBetween('created_at', [now()->subMonth(), now()])
+                ->sum('amount');
+
+            $successRate = $monthlyTransactions > 0 
+                ? round(($successfulTransactions / $monthlyTransactions) * 100, 2) 
+                : 0;
+
+            return array_merge($baseStats, [
+                'weekly_transactions' => $weeklyTransactions,
+                'monthly_transactions' => $monthlyTransactions,
+                'success_rate' => $successRate,
+                'last_health_check' => now()->format('Y-m-d H:i:s'),
+                'total_revenue' => $totalRevenue,
+            ]);
+        } catch (\Exception $e) {
+            return $baseStats;
+        }
     }
 }
