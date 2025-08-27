@@ -7,13 +7,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use NMDigitalHub\PaymentGateway\Models\PaymentPage;
 use NMDigitalHub\PaymentGateway\Models\PaymentTransaction;
-use NMDigitalHub\PaymentGateway\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
 /**
  * קונטרולר חשבון לקוח - פאנל לקוח
  */
-class ClientAccountController extends Controller
+class ClientAccountController
 {
     public function dashboard(): View
     {

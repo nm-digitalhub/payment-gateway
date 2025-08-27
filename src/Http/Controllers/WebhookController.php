@@ -5,14 +5,13 @@ namespace NMDigitalHub\PaymentGateway\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use NMDigitalHub\PaymentGateway\Jobs\ProcessPaymentWebhook;
 use NMDigitalHub\PaymentGateway\Models\PaymentTransaction;
 use NMDigitalHub\PaymentGateway\Models\ProviderSetting;
 
-class WebhookController extends Controller
+class WebhookController
 {
     /**
      * Handle CardCom webhook
