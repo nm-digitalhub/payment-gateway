@@ -65,7 +65,7 @@ class HealthCheckCommand extends Command
     protected function showDetailedHealth($provider, PaymentGatewayManager $manager): void
     {
         try {
-            $stats = $manager->getProviderStats($provider['name']);
+            $stats = $manager->getProviderDetailedStats($provider['name']);
             $this->line("  • תמיכה בטוקנים: " . ($provider['supports_tokens'] ? 'כן' : 'לא'));
             $this->line("  • תמיכה ב-3DS: " . ($provider['supports_3ds'] ? 'כן' : 'לא'));
             $this->line("  • עסקאות השבוע: " . ($stats['weekly_transactions'] ?? 0));

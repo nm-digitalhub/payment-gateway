@@ -576,7 +576,7 @@ class PaymentGatewayManager
     /**
      * קבלת סטטיסטיקות ספק בודד
      */
-    public function getProviderStats(string $providerName): array
+    public function getProviderDetailedStats(string $providerName): array
     {
         $baseStats = [
             'weekly_transactions' => 0,
