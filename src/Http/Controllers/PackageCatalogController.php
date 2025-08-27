@@ -15,7 +15,7 @@ use NMDigitalHub\PaymentGateway\Models\Package;
  * Package Catalog Controller
  * מבוסס על מערכת eSIM packages - קטלוג חבילות מאוחד
  */
-class PackageCatalogController extends Controller
+class PackageCatalogController
 {
     public function __construct(
         private CardComService $cardComService,

@@ -13,7 +13,7 @@ use NMDigitalHub\PaymentGateway\Services\PaymentGatewayManager;
  * Payment Handler Controller
  * מבוסס על EsimPaymentController - טיפול בתשלומים
  */
-class PaymentHandlerController extends Controller
+class PaymentHandlerController
 {
     public function __construct(
         private CardComService $cardComService,
