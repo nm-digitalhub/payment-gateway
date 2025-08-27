@@ -383,7 +383,7 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * רישום משאבי פאנל אדמין
+     * רישום משאבי פאנל אדמין - Filament v3 compatible
      */
     protected function registerAdminResources(): void
     {
@@ -393,22 +393,23 @@ class PaymentGatewayServiceProvider extends PackageServiceProvider
         }
 
         try {
-            // רישום PaymentPageResource
-            if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentPageResource')) {
-                \Filament\Facades\Filament::serving(function () {
-                    \Filament\Facades\Filament::registerResources([
+            // רישום ישיר של המשאבים לפאנל האדמין
+            $adminPanel = \Filament\Facades\Filament::getPanel('admin');
+            
+            if ($adminPanel) {
+                // רישום PaymentPageResource
+                if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentPageResource')) {
+                    $adminPanel->resources([
                         \NMDigitalHub\PaymentGateway\Filament\Resources\PaymentPageResource::class,
                     ]);
-                });
-            }
+                }
 
-            // רישום PaymentTransactionResource
-            if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentTransactionResource')) {
-                \Filament\Facades\Filament::serving(function () {
-                    \Filament\Facades\Filament::registerResources([
+                // רישום PaymentTransactionResource
+                if (class_exists('\\NMDigitalHub\\PaymentGateway\\Filament\\Resources\\PaymentTransactionResource')) {
+                    $adminPanel->resources([
                         \NMDigitalHub\PaymentGateway\Filament\Resources\PaymentTransactionResource::class,
                     ]);
-                });
+                }
             }
 
             \Log::info('Payment Gateway: Admin resources registered successfully');
